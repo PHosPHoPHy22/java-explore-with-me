@@ -117,6 +117,14 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <mainClass>ru.practicum.StatServiceApp</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
