@@ -1,59 +1,57 @@
 services:
   stats-server:
-    build: stat-service/stat-server
-    image: stat-server
-    container_name: stat-server
+    build: stats/stats-server
+    image: stats-server
+    container_name: stats-server
     ports:
       - "9090:9090"
     depends_on:
       - stats-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stat
-      - SPRING_DATASOURCE_USERNAME=stat
-      - SPRING_DATASOURCE_PASSWORD=stat
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
 
 
   stats-db:
     image: postgres:16.1
-    container_name: postgres-stat
+    container_name: stats-db
     ports:
-      - "5532:5432"
+      - "5431:5432"
     environment:
-      - POSTGRES_PASSWORD=stat
-      - POSTGRES_USER=stat
-      - POSTGRES_DB=stat
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=stats
     healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       timeout: 5s
       interval: 5s
       retries: 10
 
   ewm-service:
     build: main-service
-    image: evm-service
-    container_name: evm-service
+    image: ewm-service
+    container_name: ewm_service
     ports:
       - "8080:8080"
     depends_on:
       - ewm-db
-      - stats-server
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/main
-      - SPRING_DATASOURCE_USERNAME=main
-      - SPRING_DATASOURCE_PASSWORD=main
-      - STAT_SERVER_URL=http://stats-server:9090
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
 
   ewm-db:
     image: postgres:16.1
-    container_name: postgres-main
+    container_name: ewm-db
     ports:
-      - "5632:5432"
+      - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=main
-      - POSTGRES_USER=main
-      - POSTGRES_DB=main
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=ewm
     healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       timeout: 5s
       interval: 5s
       retries: 10
