@@ -11,7 +11,6 @@ import ru.practicum.mainservice.user.dto.UserShortDto;
 import java.time.LocalDateTime;
 
 
-
 @Data
 @Builder
 @AllArgsConstructor
