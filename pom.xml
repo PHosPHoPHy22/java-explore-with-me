@@ -17,14 +17,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <properties>
-        <java.version>21</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mapstruct.version>1.5.3.Final</mapstruct.version>
-        <mapstruct-processor.version>1.5.5.Final</mapstruct-processor.version>
-        <maven.compiler.sourse>21</maven.compiler.sourse>
-        <maven.compiler.target>21</maven.compiler.target>
-    </properties>
 
     <dependencies>
         <dependency>
