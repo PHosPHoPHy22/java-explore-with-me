@@ -1,23 +1,23 @@
-package ru.practicum.users.dto;
+
+package ru.practicum.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.Length;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @AllArgsConstructor
-public class UserDto {
-
-    private Long id;
-
-    @NotBlank(message = "empty email")
-    @Email(message = "email is not correct")
+public class UserRequestDto {
+    @NotBlank
     @Length(min = 6, max = 254)
-    private String email;
-
+    @Email
+    String email;
+    @NotBlank
     @Length(min = 2, max = 250)
-    @NotBlank(message = "empty name")
-    private String name;
+    String name;
 }
