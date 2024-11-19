@@ -74,6 +74,12 @@
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct-processor.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>explore-with-me</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
