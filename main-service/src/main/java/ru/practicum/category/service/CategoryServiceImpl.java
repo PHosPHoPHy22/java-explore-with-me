@@ -24,14 +24,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public ResponseEntity<Category> addCategory(Category category) {
-        log.info("Creating category: {}", category);
-        if (categoryRepository.existsByNameIgnoreCase(category.getName())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(null); // or a custom error response
-        }
-        Category createdCategory = categoryRepository.save(category);
-        return ResponseEntity.ok(createdCategory);
+    public Category addCategory(Category category) {
+        log.info("The beginning of the process of creating a category");
+        categoryRepository.findCategoriesByNameContainingIgnoreCase(category.getName().toLowerCase()).ifPresent(c -> {
+            throw new IntegrityViolationException("Category name " + category.getName() + " already exists");
+        });
+        Category createCategory = categoryRepository.save(category);
+        log.info("The category has been created");
+        return createCategory;
     }
 
     @Override
