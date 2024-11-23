@@ -23,6 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class RequestServiceImpl implements RequestService {
     private final RequestsRepository requestsRepository;
     private final RequestMapper requestMapper;
@@ -41,7 +42,6 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    @Transactional
     public ParticipationRequestDto addRequest(long userId, long eventId) {
         log.info("The beginning of the process of creating a request");
         requestsRepository.findByEventIdAndRequesterId(eventId, userId).ifPresent(
@@ -89,7 +89,6 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    @Transactional
     public ParticipationRequestDto cancelRequest(long userId, long requestId) {
         log.info("The beginning of the process of canceling a request");
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException(

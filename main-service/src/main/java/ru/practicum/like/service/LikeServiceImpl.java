@@ -23,6 +23,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@Transactional
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
     private static final int DIFFERENCE_RATING_BY_ADD = 1;
@@ -36,7 +37,6 @@ public class LikeServiceImpl implements LikeService {
     private final EventMapper eventMapper;
 
     @Override
-    @Transactional
     public EventFullDto addLike(long eventId, long userId, StatusLike statusLike) {
         log.info("Adding like to event {}", eventId);
         User user = userRepository.findById(userId)
@@ -69,7 +69,6 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    @Transactional
     public EventFullDto updateLike(long eventId, long userId, StatusLike statusLike) {
         log.info("Updating like to event {}", eventId);
         User user = userRepository.findById(userId)
@@ -95,7 +94,6 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    @Transactional
     public void deleteLike(long eventId, long userId) {
         log.info("Deleting like to event {}", eventId);
         User user = userRepository.findById(userId)
