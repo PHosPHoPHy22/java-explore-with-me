@@ -1,105 +1,79 @@
-package ru.practicum.compilation.service;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import ru.practicum.compilation.dto.CompilationDto;
-import ru.practicum.compilation.dto.NewCompilationDto;
-import ru.practicum.compilation.dto.UpdateCompilationRequest;
-import ru.practicum.compilation.dto.mapper.CompilationMapper;
-import ru.practicum.compilation.model.Compilation;
-import ru.practicum.compilation.repository.CompilationRepository;
-import ru.practicum.event.repository.EventRepository;
-import ru.practicum.exception.NotFoundException;
-
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
-public class CompilationServiceImpl implements CompilationService {
-    private final CompilationRepository compilationRepository;
-    private final CompilationMapper compilationMapper;
+public class CategoryServiceImpl implements CategoryService {
+    private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
 
     @Override
-    public CompilationDto addCompilation(NewCompilationDto compilationDto) {
-        log.info("The beginning of the process of creating a compilation");
-        Compilation compilation = compilationMapper.newCompilationDtoToCompilation(compilationDto);
-        List<Long> ids = compilationDto.getEvents();
-
-        if (!CollectionUtils.isEmpty(ids)) {
-            compilation.setEvents(eventRepository.findAllByIdIn(ids));
-        } else {
-            compilation.setEvents(Collections.emptyList());
-        }
-
-        Compilation createdCompilation = compilationRepository.save(compilation);
-        log.info("The compilation has been created");
-        return compilationMapper.compilationToCompilationDto(createdCompilation);
+    @Transactional
+    public Category addCategory(Category category) {
+        log.info("The beginning of the process of creating a category");
+        categoryRepository.findCategoriesByNameContainingIgnoreCase(category.getName().toLowerCase()).ifPresent(c -> {
+            throw new IntegrityViolationException("Category name " + category.getName() + " already exists");
+        });
+        Category createCategory = categoryRepository.save(category);
+        log.info("The category has been created");
+        return createCategory;
     }
 
     @Override
-    public CompilationDto updateCompilation(long compId, UpdateCompilationRequest request) {
-        log.info("The beginning of the process of updating a compilation");
-        Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException("Compilation with id " + compId + " not found"));
-
-        if (!CollectionUtils.isEmpty(request.getEvents())) {
-            compilation.setEvents(eventRepository.findAllByIdIn(request.getEvents()));
+    @Transactional
+    public void deleteCategory(long catId) {
+        log.info("The beginning of the process of deleting a category");
+        categoryRepository.findById(catId).orElseThrow(
+                () -> new NotFoundException("Category " + catId + " does not exist"));
+        if (!eventRepository.findAllByCategoryId(catId).isEmpty()) {
+            throw new IntegrityViolationException("Category " + catId + " already exists");
         }
-
-        compilation.setPinned(Optional.ofNullable(request.getPinned()).orElse(compilation.getPinned()));
-        compilation.setTitle(Optional.ofNullable(request.getTitle()).orElse(compilation.getTitle()));
-
-        log.info("The compilation has been updated");
-        return compilationMapper.compilationToCompilationDto(compilation);
+        categoryRepository.deleteById(catId);
+        log.info("The category has been deleted");
     }
 
     @Override
-    public void deleteCompilation(long compId) {
-        log.info("The beginning of the process of deleting a compilation");
-        compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException("Compilation with id " + compId + " not found"));
-        compilationRepository.deleteById(compId);
-        log.info("The compilation has been deleted");
+    @Transactional
+    public Category updateCategory(long catId, Category newCategory) {
+        log.info("The beginning of the process of updating a category");
+        Category updateCategory = categoryRepository.findById(catId).orElseThrow(
+                () -> new NotFoundException("Category with id=" + catId + " does not exist"));
+        categoryRepository.findCategoriesByNameContainingIgnoreCase(
+                newCategory.getName().toLowerCase()).ifPresent(c -> {
+            if (c.getId() != catId) {
+                throw new IntegrityViolationException("Category name " + newCategory.getName() + " already exists");
+            }
+        });
+        updateCategory.setName(newCategory.getName());
+        log.info("The category has been updated");
+        return updateCategory;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<CompilationDto> getAllCompilations(Boolean pinned, int from, int size) {
-        log.info("The beginning of the process of finding a all compilations");
+    public List<Category> getAllCategories(int from, int size) {
+        log.info("The beginning of the process of finding a categories");
         PageRequest pageRequest = PageRequest.of(from, size);
-        List<CompilationDto> compilationsDto;
+        Page<Category> pageCategories = categoryRepository.findAll(pageRequest);
+        List<Category> categories;
 
-        if (pinned == null) {
-            compilationsDto = compilationMapper.listCompilationToListCompilationDto(compilationRepository
-                    .findAll(pageRequest).getContent());
-        } else if (pinned) {
-            compilationsDto = compilationMapper.listCompilationToListCompilationDto(
-                    compilationRepository.findAllByPinnedTrue(pageRequest).getContent());
+        if (pageCategories.hasContent()) {
+            categories = pageCategories.getContent();
         } else {
-            compilationsDto = compilationMapper.listCompilationToListCompilationDto(
-                    compilationRepository.findAllByPinnedFalse(pageRequest).getContent());
+            categories = Collections.emptyList();
         }
 
-        log.info("The all compilations has been found");
-        return compilationsDto;
+        log.info("The categories was found");
+        return categories;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CompilationDto getCompilationById(long compId) {
-        log.info("The beginning of the process of finding a all compilations by id");
-        Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException("Compilation with id " + compId + " not found"));
-        log.info("The all compilations by id has been found");
-        return compilationMapper.compilationToCompilationDto(compilation);
+    public Category getCategory(long catId) {
+        log.info("The beginning of the process of finding a category");
+        Category category = categoryRepository.findById(catId).orElseThrow(
+                () -> new NotFoundException("Category with id=" + catId + " does not exist"));
+        log.info("The category was found");
+        return category;
     }
 }
