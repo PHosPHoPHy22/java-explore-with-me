@@ -17,13 +17,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
 
     @Override
-    @Transactional
     public Category addCategory(Category category) {
         log.info("The beginning of the process of creating a category");
         categoryRepository.findCategoriesByNameContainingIgnoreCase(category.getName().toLowerCase()).ifPresent(c -> {
@@ -35,7 +35,6 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Transactional
     public void deleteCategory(long catId) {
         log.info("The beginning of the process of deleting a category");
         categoryRepository.findById(catId).orElseThrow(
@@ -48,7 +47,6 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Transactional
     public Category updateCategory(long catId, Category newCategory) {
         log.info("The beginning of the process of updating a category");
         Category updateCategory = categoryRepository.findById(catId).orElseThrow(
