@@ -16,79 +16,56 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
+
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
 
     @Override
-    @Transactional
     public Category addCategory(Category category) {
-        log.info("The beginning of the process of creating a category");
-        categoryRepository.findCategoriesByNameContainingIgnoreCase(category.getName().toLowerCase()).ifPresent(c -> {
-            throw new IntegrityViolationException("Category name " + category.getName() + " already exists");
-        });
-        Category createCategory = categoryRepository.save(category);
-        log.info("The category has been created");
-        return createCategory;
+        log.info("Creating category: {}", category);
+        if (categoryRepository.existsByNameIgnoreCase(category.getName())) {
+            throw new IntegrityViolationException("Category name '" + category.getName() + "' already exists.");
+        }
+        return categoryRepository.save(category);
     }
 
     @Override
-    @Transactional
     public void deleteCategory(long catId) {
-        log.info("The beginning of the process of deleting a category");
-        categoryRepository.findById(catId).orElseThrow(
-                () -> new NotFoundException("Category " + catId + " does not exist"));
+        log.info("Deleting category with ID: {}", catId);
+        categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException("Category with id=" + catId + " not found"));
         if (!eventRepository.findAllByCategoryId(catId).isEmpty()) {
-            throw new IntegrityViolationException("Category " + catId + " already exists");
+            throw new IllegalStateException("Cannot delete category " + catId + " because it's associated with events.");
         }
         categoryRepository.deleteById(catId);
-        log.info("The category has been deleted");
     }
 
     @Override
-    @Transactional
     public Category updateCategory(long catId, Category newCategory) {
-        log.info("The beginning of the process of updating a category");
-        Category updateCategory = categoryRepository.findById(catId).orElseThrow(
-                () -> new NotFoundException("Category with id=" + catId + " does not exist"));
-        categoryRepository.findCategoriesByNameContainingIgnoreCase(
-                newCategory.getName().toLowerCase()).ifPresent(c -> {
-            if (c.getId() != catId) {
-                throw new IntegrityViolationException("Category name " + newCategory.getName() + " already exists");
-            }
-        });
+        log.info("Updating category with ID {}: {}", catId, newCategory);
+        Category updateCategory = categoryRepository.findById(catId).orElseThrow(() -> new NotFoundException("Category with id=" + catId + " not found"));
+        if (categoryRepository.existsByNameIgnoreCaseAndIdNot(newCategory.getName(), catId)) {
+            throw new IntegrityViolationException("Category name '" + newCategory.getName() + "' already exists.");
+        }
         updateCategory.setName(newCategory.getName());
-        log.info("The category has been updated");
         return updateCategory;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Category> getAllCategories(int from, int size) {
-        log.info("The beginning of the process of finding a categories");
+        log.info("Finding categories, from={}, size={}", from, size);
         PageRequest pageRequest = PageRequest.of(from, size);
-        Page<Category> pageCategories = categoryRepository.findAll(pageRequest);
-        List<Category> categories;
-
-        if (pageCategories.hasContent()) {
-            categories = pageCategories.getContent();
-        } else {
-            categories = Collections.emptyList();
-        }
-
-        log.info("The categories was found");
-        return categories;
+        return categoryRepository.findAll(pageRequest).getContent();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Category getCategory(long catId) {
-        log.info("The beginning of the process of finding a category");
-        Category category = categoryRepository.findById(catId).orElseThrow(
-                () -> new NotFoundException("Category with id=" + catId + " does not exist"));
-        log.info("The category was found");
-        return category;
+    public Optional<Category> getCategory(long catId) {
+        log.info("Finding category with ID: {}", catId);
+        return categoryRepository.findById(catId);
     }
 }
