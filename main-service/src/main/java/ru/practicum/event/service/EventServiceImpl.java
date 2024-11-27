@@ -45,7 +45,6 @@ import static ru.practicum.event.model.QEvent.event;
 
 @Service
 @Slf4j
-@Transactional
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
@@ -56,7 +55,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     private final RequestMapper requestMapper;
 
-
+    @Transactional
     @Override
     public EventFullDto addEvent(NewEventDto newEventDto, long userId) {
         log.info("The beginning of the process of creating a event");
@@ -145,7 +144,7 @@ public class EventServiceImpl implements EventService {
         return eventsShortDto;
     }
 
-
+    @Transactional
     @Override
     public EventFullDto updateEvent(UpdateEventUserRequest updateEvent, long userId, long eventId) {
         log.info("The beginning of the process of updates a event");
@@ -227,7 +226,7 @@ public class EventServiceImpl implements EventService {
         return requestMapper.listRequestToListParticipationRequestDto(requests);
     }
 
-
+    @Transactional
     @Override
     public EventRequestStatusUpdateResultDto updateRequestByEventId(EventRequestStatusUpdateRequestDto updateRequests,
                                                                     long userId,
@@ -374,6 +373,7 @@ public class EventServiceImpl implements EventService {
         return eventMapper.listEventToListEventFullDto(events);
     }
 
+    @Transactional
     @Override
     public EventFullDto updateEventAdmin(UpdateEventAdminRequest updateEvent, long eventId) {
         log.info("The beginning of the process of updates a event by admin");
